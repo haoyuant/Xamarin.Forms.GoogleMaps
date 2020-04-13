@@ -33,6 +33,8 @@ namespace Xamarin.Forms.GoogleMaps.iOS
         private bool _ready;
 
         internal readonly IList<BaseLogic<MapView>> Logics;
+
+        public UICustomOverlay CustomOverlay { get; set; }
         
         public MapRenderer()
         {
@@ -51,6 +53,8 @@ namespace Xamarin.Forms.GoogleMaps.iOS
                 OnCameraPositionChanged(NativeMap.Camera);
             });
         }
+
+
 
         public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
         {
@@ -71,6 +75,7 @@ namespace Xamarin.Forms.GoogleMaps.iOS
                 }               
                 _cameraLogic.Unregister();
                 _uiSettingsLogic.Unregister();
+                CustomOverlay?.Unregister(NativeMap);
 
                 var mkMapView = (MapView)Control;
                 if(mkMapView!=null)
@@ -158,6 +163,8 @@ namespace Xamarin.Forms.GoogleMaps.iOS
                     logic.OnMapPropertyChanged(new PropertyChangedEventArgs(Map.SelectedPinProperty.PropertyName));
                 }
 
+                CustomOverlay = new UICustomOverlay();
+                CustomOverlay.Register(NativeMap);
             }
         }
 
@@ -278,7 +285,7 @@ namespace Xamarin.Forms.GoogleMaps.iOS
 #pragma warning disable 618
             mapModel.VisibleRegion = new MapSpan(pos.Target.ToPosition(), maxLat - minLat, maxLon - minLon);
 #pragma warning restore 618
-
+            
             Map.Region = mkMapView.Projection.VisibleRegion.ToRegion();
 
             var camera = pos.ToXamarinForms();

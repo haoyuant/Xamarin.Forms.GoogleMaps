@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace Xamarin.Forms.GoogleMaps
 {
@@ -16,6 +17,8 @@ namespace Xamarin.Forms.GoogleMaps
         public static readonly BindableProperty StrokeColorProperty = BindableProperty.Create(nameof(StrokeColor), typeof(Color), typeof(Polyline), Color.Blue);
         public static readonly BindableProperty IsClickableProperty = BindableProperty.Create(nameof(IsClickable), typeof(bool), typeof(Polyline), false);
         public static readonly BindableProperty ZIndexProperty = BindableProperty.Create(nameof(ZIndex), typeof(int), typeof(Polyline), 0);
+
+        public event EventHandler<Position> LastPositionChanged;
 
         private readonly ObservableCollection<Position> _positions = new ObservableCollection<Position>();
 
@@ -50,6 +53,35 @@ namespace Xamarin.Forms.GoogleMaps
             get { return _positions; }
         }
 
+        public void AddPositions(IList<Position> positions)
+        {
+            var handler = _positionsChangedHandler;
+            SetOnPositionsChanged(null);
+            var lastIndex = positions.Count - 1;
+            for (var i = 0; i < lastIndex; ++i)
+            {
+                _positions.Add(positions[i]);
+            }
+            SetOnPositionsChanged(handler);
+            _positions.Add(positions[lastIndex]);
+        }
+
+        public void RemovePositions(int count)
+        {
+            if (count == 0) return;
+            var handler = _positionsChangedHandler;
+            SetOnPositionsChanged(null);
+            var positionCount = _positions.Count;
+            for (var i = 0; i < count - 1; ++i)
+            {
+                if (positionCount == 0) break;
+                _positions.RemoveAt(--positionCount);
+            }
+            SetOnPositionsChanged(handler);
+            if (positionCount == 0) return;
+            _positions.RemoveAt(--positionCount);
+        }
+
         public object Tag { get; set; }
 
         public object NativeObject { get; internal set; }
@@ -81,6 +113,7 @@ namespace Xamarin.Forms.GoogleMaps
 
         void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
+            LastPositionChanged?.Invoke(this, Positions.LastOrDefault());
             _positionsChangedHandler?.Invoke(this, e);
         }
     }

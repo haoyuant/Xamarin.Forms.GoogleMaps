@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using CoreGraphics;
 using Google.Maps;
+using UIKit;
 using Xamarin.Forms.GoogleMaps.iOS.Extensions;
 using Xamarin.Forms.Platform.iOS;
 using NativePolyline = Google.Maps.Polyline;
@@ -32,7 +34,7 @@ namespace Xamarin.Forms.GoogleMaps.Logics.iOS
 
             base.Unregister(nativeMap, map);
         }
-
+        
         protected override NativePolyline CreateNativeItem(Polyline outerItem)
         {
             var path = new MutablePath();
@@ -46,12 +48,24 @@ namespace Xamarin.Forms.GoogleMaps.Logics.iOS
             nativePolyline.ZIndex = outerItem.ZIndex;
 
             outerItem.NativeObject = nativePolyline;
-            nativePolyline.Map = NativeMap;
+            if (outerItem.Positions.Count >= 2)
+            {
+                nativePolyline.Map = NativeMap;
+            }
 
             outerItem.SetOnPositionsChanged((polyline, e) =>
             {
                 var native = polyline.NativeObject as NativePolyline;
                 native.Path = polyline.Positions.ToMutablePath();
+                if (native.Map == null && polyline.Positions.Count >= 2)
+                {
+                    native.Map = NativeMap;
+                }
+
+                if (native.Map != null && polyline.Positions.Count < 2)
+                {
+                    native.Map = null;
+                }
             });
 
             return nativePolyline;

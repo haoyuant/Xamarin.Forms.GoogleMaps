@@ -348,8 +348,8 @@ namespace Xamarin.Forms.GoogleMaps
 
         void PolylinesOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
         {
-            if (e.NewItems != null && e.NewItems.Cast<Polyline>().Any(polyline => polyline.Positions.Count < 2))
-                throw new ArgumentException("Polyline must have a 2 positions to be added to a map");
+            // if (e.NewItems != null && e.NewItems.Cast<Polyline>().Any(polyline => polyline.Positions.Count < 2))
+            //     throw new ArgumentException("Polyline must have a 2 positions to be added to a map");
         }
 
         void PolygonsOnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
